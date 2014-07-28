@@ -8,7 +8,7 @@ function sleep(milliseconds) {
 }
 
 var BoardModel = Backbone.Model.extend({
-    urlRoot: '/new/10'
+    urlRoot: 'http://localhost:8080/new/10'
 });
 
 var AppView = Backbone.View.extend({
