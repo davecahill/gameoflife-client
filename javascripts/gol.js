@@ -8,12 +8,12 @@ function sleep(milliseconds) {
   }
 }
 
-// Set up info messages
-var InfoMessage = Backbone.Model.extend({
+// Set up log messages model
+var LogMessage = Backbone.Model.extend({
     messageText: ""
 });
-var InfoMessages = Backbone.Collection.extend({
-  model: InfoMessage
+var LogMessages = Backbone.Collection.extend({
+  model: LogMessage
 });
 
 // Set up board model
@@ -21,39 +21,56 @@ var BoardModel = Backbone.Model.extend({
     urlRoot: 'http://localhost:8080/new/10'
 });
 
-// Set up view
-var AppView = Backbone.View.extend({
-  el: '#container',
+// Set up log messages view
+var LogView = Backbone.View.extend({
+  el: '#messages',
 
   initialize: function(){
-    this.infoMessages = new InfoMessages();
-    this.numMessages = 0;
+    this.infoMessages = new LogMessages();
+  },
+
+  logMessage: function(msg) {
+    this.infoMessages.add(new LogMessage({messageText: msg}));
+    this.render();
+  },
+
+  render: function(){
+    var html = "";
+    for (var i = this.infoMessages.models.length - 1; i >= 0; i--) {
+      html += "<tr><td>" + (i + 1) + "</td><td>" + this.infoMessages.models[i].attributes.messageText  + "</td></tr>";
+    }
+    this.$el.html(html);
+  }
+});
+
+
+// Set up board view
+var BoardView = Backbone.View.extend({
+  el: '#gameoflife',
+
+  initialize: function(){
     this.listenTo(this.model, 'change', this.renderAndSave);
+    // Kick off the initial request to get the "seed"
     this.model.fetch({success: this.serverSuccess, error: this.serverError});
   },
 
   serverSuccess: function(model, response) {
-    appView.numMessages += 1;
-    appView.logMessage(appView.numMessages + " Contacting Game of Life API server succeeded");
+    logView.logMessage("Contacting Game of Life API server succeeded");
   },
 
   serverError: function(model, response) {
-    appView.logMessage("Contacting Game of Life API server failed (" + response.statusText + "), URL: <i>" + appView.model.urlRoot + "</i>");
-  },
-
-  logMessage: function(msg) {
-    this.infoMessages.add(new InfoMessage({messageText: msg}));
-    this.justRender();
+    logView.logMessage("Contacting Game of Life API server failed (" + response.statusText + "), URL: <i>" + boardView.model.urlRoot + "</i>");
   },
 
   renderAndSave: function() {
-    this.justRender();
+    this.render();
+    sleep(100);
     this.model.save(null, {success: this.serverSuccess, error: this.serverError});
   },
 
-  justRender: function(){
+  render: function(){
     var states = this.model.attributes.States;
-    var html = "<table>";
+    var html = "";
     if (states) {
       for (var row = 0; row < states.length; row++) {
         html += "<tr>";
@@ -69,17 +86,12 @@ var AppView = Backbone.View.extend({
         html += "</tr>";
       }
     }
-    /*html += "</table></div><div class='col-md-4 panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>Server messages</h3></div><div class='panel-body'>";
-    for (var i = this.infoMessages.models.length - 1; i >= 0; i--) {
-      html += this.infoMessages.models[i].attributes.messageText + "<br/>";
-    }
-    html += "</div></div>";
-    */
     this.$el.html(html);
-    sleep(100);
   }
 });
 
 // Start
 var boardModel = new BoardModel();
-var appView = new AppView({model: boardModel});
+var boardView = new BoardView({model: boardModel});
+var logView = new LogView();
+
