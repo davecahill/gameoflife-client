@@ -10,7 +10,7 @@ function sleep(milliseconds) {
 
 // Set up info messages
 var InfoMessage = Backbone.Model.extend({
-    messageText: "hello world"
+    messageText: ""
 });
 var InfoMessages = Backbone.Collection.extend({
   model: InfoMessage
@@ -27,12 +27,14 @@ var AppView = Backbone.View.extend({
 
   initialize: function(){
     this.infoMessages = new InfoMessages();
+    this.numMessages = 0;
     this.listenTo(this.model, 'change', this.renderAndSave);
     this.model.fetch({success: this.serverSuccess, error: this.serverError});
   },
 
   serverSuccess: function(model, response) {
-    // Do nothing for now
+    appView.numMessages += 1;
+    appView.logMessage(appView.numMessages + " Contacting Game of Life API server succeeded");
   },
 
   serverError: function(model, response) {
@@ -67,10 +69,12 @@ var AppView = Backbone.View.extend({
         html += "</tr>";
       }
     }
-    html += "</table>";
-    for (var i = 0; i < this.infoMessages.models.length; i++) {
+    /*html += "</table></div><div class='col-md-4 panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>Server messages</h3></div><div class='panel-body'>";
+    for (var i = this.infoMessages.models.length - 1; i >= 0; i--) {
       html += this.infoMessages.models[i].attributes.messageText + "<br/>";
     }
+    html += "</div></div>";
+    */
     this.$el.html(html);
     sleep(100);
   }
