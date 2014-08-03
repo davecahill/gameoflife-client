@@ -18,7 +18,7 @@ var InfoMessages = Backbone.Collection.extend({
 
 // Set up board model
 var BoardModel = Backbone.Model.extend({
-    urlRoot: 'http://localhost:8080/new/5'
+    urlRoot: 'http://localhost:8080/new/10'
 });
 
 // Set up view
@@ -27,7 +27,7 @@ var AppView = Backbone.View.extend({
 
   initialize: function(){
     this.infoMessages = new InfoMessages();
-    this.listenTo(this.model, 'change', this.render);
+    this.listenTo(this.model, 'change', this.renderAndSave);
     this.model.fetch({success: this.serverSuccess, error: this.serverError});
   },
 
@@ -41,10 +41,15 @@ var AppView = Backbone.View.extend({
 
   logMessage: function(msg) {
     this.infoMessages.add(new InfoMessage({messageText: msg}));
-    this.render();
+    this.justRender();
   },
 
-  render: function(){
+  renderAndSave: function() {
+    this.justRender();
+    this.model.save(null, {success: this.serverSuccess, error: this.serverError});
+  },
+
+  justRender: function(){
     var states = this.model.attributes.States;
     var html = "<table>";
     if (states) {
@@ -61,7 +66,6 @@ var AppView = Backbone.View.extend({
         }
         html += "</tr>";
       }
-      this.model.save(null, {success: this.serverSuccess, error: this.serverError});
     }
     html += "</table>";
     for (var i = 0; i < this.infoMessages.models.length; i++) {
