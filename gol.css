@@ -1,3 +1,26 @@
+
+/*  GAME OF LIFE BOOTSTRAP CSS  */
+
+.alive {background-color:black;}
+.dead {background-color:yellow;}
+
+#gameoflife {
+  /* Move game of life board down to make space for board size chooser */
+  margin-top: 50px;
+}
+
+td,th {
+  min-width: 1em; /* the normal 'fixed' width */
+  width: 1em; /* the normal 'fixed' width */
+  max-width: 1em; /* the normal 'fixed' width, to stop the cells expanding */
+
+  min-height: 1em; /* the normal 'fixed' width */
+  height: 1em; /* the normal 'fixed' width */
+  max-height: 1em; /* the normal 'fixed' width, to stop the cells expanding */
+}
+
+/*  BELOW IS BOOTSTRAP CSS  */
+
 /*
  * Base structure
  */

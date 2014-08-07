@@ -18,7 +18,14 @@ var LogMessages = Backbone.Collection.extend({
 
 // Set up board model
 var BoardModel = Backbone.Model.extend({
-    urlRoot: 'http://localhost:8080/new/10'
+    size: 10,
+    urlRoot: function(){ return 'http://localhost:8080/new/' + this.size},
+    success: function(model, response) {
+      logView.logMessage("Contacting Game of Life API server succeeded, URL: <i>" + this.urlRoot + "</i>");
+    },
+    error: function(model, response) {
+      logView.logMessage("Contacting Game of Life API server failed (" + response.statusText + "), URL: <i>" + this.urlRoot + "</i>");
+    }
 });
 
 // Set up log messages view
@@ -43,6 +50,30 @@ var LogView = Backbone.View.extend({
   }
 });
 
+var BoardSizeView = Backbone.View.extend({
+  el: '#boardbuttons',
+
+  events : function () {
+    var evts = {};
+    var view = this;
+
+    [4, 10, 20].forEach( function(size) {
+      evts[ "click .btn-" + size ] = (function(size) {
+        return function (event) {
+          view.model.set({"size": size});
+        };
+      })(size);
+
+    });
+
+    return evts;
+  },
+
+  setSize: function(size) {
+    boardModel.size = size;
+  }
+
+});
 
 // Set up board view
 var BoardView = Backbone.View.extend({
@@ -51,21 +82,25 @@ var BoardView = Backbone.View.extend({
   initialize: function(){
     this.listenTo(this.model, 'change', this.renderAndSave);
     // Kick off the initial request to get the "seed"
-    this.model.fetch({success: this.serverSuccess, error: this.serverError});
-  },
-
-  serverSuccess: function(model, response) {
-    logView.logMessage("Contacting Game of Life API server succeeded");
-  },
-
-  serverError: function(model, response) {
-    logView.logMessage("Contacting Game of Life API server failed (" + response.statusText + "), URL: <i>" + boardView.model.urlRoot + "</i>");
+    this.model.fetch();
   },
 
   renderAndSave: function() {
-    this.render();
-    sleep(100);
-    this.model.save(null, {success: this.serverSuccess, error: this.serverError});
+    if (this.model.changed.size != undefined) {
+      // size changed - reflect that and fetch a new "seed"
+      console.log("size not undef");
+      this.model.size = this.model.changed.size;
+      this.model.fetch();
+    } else {
+      if (this.model.changed.States != undefined && this.model.changed.States.length == this.model.size) {
+        console.log("contents changed");
+        this.render();
+        sleep(100);
+        this.model.save();  
+      } else {
+        console.log("size wrong");
+      }
+    }
   },
 
   render: function(){
@@ -94,4 +129,5 @@ var BoardView = Backbone.View.extend({
 var boardModel = new BoardModel();
 var boardView = new BoardView({model: boardModel});
 var logView = new LogView();
+var boardSizeView = new BoardSizeView({model: boardModel});
 
