@@ -36,6 +36,7 @@ var ServerModel = Backbone.Model.extend({
 // Set up board model
 var BoardModel = Backbone.Model.extend({
     size: 10,
+    animated: true,
     urlRoot: function(){ return 'http://localhost:8080/new/' + this.size},
     success: function(model, response) {
       logView.logMessage("Contacting Game of Life API server succeeded, URL: <i>" + this.urlRoot + "</i>");
@@ -75,13 +76,15 @@ var BoardSizeView = Backbone.View.extend({
     var view = this;
 
     [4, 10, 20].forEach( function(size) {
-      evts[ "click #btn-" + size ] = (function(size) {
+      evts["click #btn-" + size] = (function(size) {
         return function (event) {
           view.model.set({"size": size});
         };
       })(size);
 
     });
+
+    evts["click #btn-stop"] = function() {view.model.set({"animated": false})};
 
     return evts;
   },
@@ -97,23 +100,27 @@ var BoardView = Backbone.View.extend({
   el: '#gameoflife',
 
   initialize: function(){
-    this.listenTo(this.model, 'change', this.renderAndSave);
+    this.listenTo(this.model, 'change', this.modelChanged);
     // Kick off the initial request to get the "seed"
     this.model.fetch();
   },
 
-  renderAndSave: function() {
+  modelChanged: function() {
     if (this.model.changed.size != undefined) {
       // size changed - reflect that and fetch a new "seed"
       this.model.size = this.model.changed.size;
       this.model.fetch();
-    } else {
-      if (this.model.changed.States != undefined && this.model.changed.States.length == this.model.size) {
+    } else if (this.model.changed.animated != undefined) {
+        this.model.animated = this.model.changed.animated;
+    } else if (this.model.changed.States != undefined) {
+      if (this.model.changed.States.length != this.model.size) {
+        console.log("size wrong, this is an old update - discard.");
+      } else if (this.model.animated == false) {
+        console.log("received an update but animation is stopped - discard.");
+      } else {
         this.render();
         sleep(100);
         this.model.save();  
-      } else {
-        console.log("size wrong, this is an old update - discard.");
       }
     }
   },
