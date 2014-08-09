@@ -44,7 +44,7 @@ var LogView = Backbone.View.extend({
   render: function(){
     var html = "";
     for (var i = this.infoMessages.models.length - 1; i >= 0; i--) {
-      html += "<tr><td>" + (i + 1) + "</td><td>" + this.infoMessages.models[i].attributes.messageText  + "</td></tr>";
+      html += "<tr><td>[" + (i + 1) + "] " + this.infoMessages.models[i].attributes.messageText  + "</td></tr>";
     }
     this.$el.html(html);
   }
