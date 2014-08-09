@@ -58,7 +58,7 @@ var BoardSizeView = Backbone.View.extend({
     var view = this;
 
     [4, 10, 20].forEach( function(size) {
-      evts[ "click .btn-" + size ] = (function(size) {
+      evts[ "click #btn-" + size ] = (function(size) {
         return function (event) {
           view.model.set({"size": size});
         };
@@ -88,17 +88,15 @@ var BoardView = Backbone.View.extend({
   renderAndSave: function() {
     if (this.model.changed.size != undefined) {
       // size changed - reflect that and fetch a new "seed"
-      console.log("size not undef");
       this.model.size = this.model.changed.size;
       this.model.fetch();
     } else {
       if (this.model.changed.States != undefined && this.model.changed.States.length == this.model.size) {
-        console.log("contents changed");
         this.render();
         sleep(100);
         this.model.save();  
       } else {
-        console.log("size wrong");
+        console.log("size wrong, this is an old update - discard.");
       }
     }
   },

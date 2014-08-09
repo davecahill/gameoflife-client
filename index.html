@@ -61,10 +61,16 @@
           <div class="row placeholders">
             <div class="col-xs-6 col-sm-3 placeholder">
               <b>Board size:</b>
-              <div class="btn-group" id="boardbuttons">
-                <button type="button" class="btn btn-4">4x4</button>
-                <button type="button" class="btn btn-10">10x10</button>
-                <button type="button" class="btn btn-20">20x20</button>
+              <div class="btn-group" id="boardbuttons" data-toggle="buttons">
+                <label class="btn btn-default" id="btn-4">
+                  <input type="radio" name="options"> 4x4
+                </label>
+                <label class="btn btn-default active" id="btn-10">
+                  <input type="radio" name="options"> 10x10
+                </label>
+                <label class="btn btn-default" id="btn-20">
+                  <input type="radio" name="options"> 20x20
+                </label>
               </div>
               <table id="gameoflife">
               </table>
