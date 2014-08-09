@@ -16,6 +16,23 @@ var LogMessages = Backbone.Collection.extend({
   model: LogMessage
 });
 
+// Set up server info model
+var ServerModel = Backbone.Model.extend({
+    initialize: function(){
+      this.fetch({success: this.success, error: this.error});
+    },
+    urlRoot: function(){ return 'http://localhost:8080/info/'},
+    success: function(model, response) {
+      logView.logMessage("Getting Game of Life server info succeeded, URL: <i>" + serverModel.urlRoot() + "</i>");
+      logView.logMessage("Server name: <i>" + response.ServerName + "</i>");
+      logView.logMessage("Server live color: <i>" + response.LiveColor + "</i>");
+      logView.logMessage("Server dead color: <i>" + response.DeadColor + "</i>");
+    },
+    error: function(model, response) {
+      logView.logMessage("Getting Game of Life server info failed (" + response.statusText + "), URL: <i>" + serverModel.urlRoot() + "</i>");
+    }
+});
+
 // Set up board model
 var BoardModel = Backbone.Model.extend({
     size: 10,
@@ -125,6 +142,7 @@ var BoardView = Backbone.View.extend({
 
 // Start
 var boardModel = new BoardModel();
+var serverModel = new ServerModel();
 var boardView = new BoardView({model: boardModel});
 var logView = new LogView();
 var boardSizeView = new BoardSizeView({model: boardModel});
