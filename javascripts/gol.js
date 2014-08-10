@@ -36,6 +36,7 @@ var ServerModel = Backbone.Model.extend({
 // Set up board model
 var BoardModel = Backbone.Model.extend({
     size: 10,
+    possibleSizes: [4, 10, 20],
     animated: true,
     urlRoot: function(){ return 'http://localhost:8080/new/' + this.size},
     success: function(model, response) {
@@ -71,26 +72,52 @@ var LogView = Backbone.View.extend({
 var BoardSizeView = Backbone.View.extend({
   el: '#boardbuttons',
 
+  initialize: function(){
+    this.listenTo(this.model, 'change', this.modelChanged);
+    this.render();
+  },
+
+  modelChanged: function() {
+    if (this.model.changed.animated != undefined) {
+      this.render();
+    }
+  },
+
   events : function () {
     var evts = {};
     var view = this;
+    var model = view.model;
 
-    [4, 10, 20].forEach( function(size) {
+    model.possibleSizes.forEach( function(size) {
       evts["click #btn-" + size] = (function(size) {
         return function (event) {
-          view.model.set({"size": size});
+          model.set({"size": size});
         };
       })(size);
 
     });
 
     evts["click #btn-stop"] = function() {view.model.set({"animated": false})};
+    evts["click #btn-start"] = function() {view.model.set({"animated": true})};
 
     return evts;
   },
 
-  setSize: function(size) {
-    boardModel.size = size;
+  render: function() {
+    html = "<b>Board size:</b><div class='btn-group' data-toggle='buttons'>"
+    this.model.possibleSizes.forEach( function(size) {
+      html += "<label class='btn btn-default' id='btn-" + size + "'><input type='radio' name='options'> " + size + "x" + size + "</label>";
+    });
+
+    stopHidden = "";
+    startHidden = "";
+    if (this.model.animated) {
+      startHidden = "hidden";
+    } else {
+      stopHidden = "hidden";
+    }
+    html +="</div><div><b>Animation actions:</b><div class='btn-group' id='animationbuttons'><button type='button' class='btn btn-danger " + stopHidden + "' id='btn-stop'>Stop animation</button><button type='button' class='btn btn-success " + startHidden + "' id='btn-start'>Start animation</button></div></div>";
+    this.$el.html(html);
   }
 
 });
@@ -112,6 +139,9 @@ var BoardView = Backbone.View.extend({
       this.model.fetch();
     } else if (this.model.changed.animated != undefined) {
         this.model.animated = this.model.changed.animated;
+        if (this.model.animated) {
+          this.model.save();
+        }
     } else if (this.model.changed.States != undefined) {
       if (this.model.changed.States.length != this.model.size) {
         console.log("size wrong, this is an old update - discard.");
