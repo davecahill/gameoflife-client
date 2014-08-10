@@ -94,7 +94,7 @@ var BoardSizeView = Backbone.View.extend({
     var buttonsTemplateStr = "<b>Board size:</b> \
     <div class='btn-group' data-toggle='buttons'> \
     <% _.each(possibleSizes, function(size) { %> \
-      <label class='btn btn-default' id='btn-<%= size %>'><input type='radio' name='options'> <%= size %>x<%= size %></label> \
+      <label class='btn btn-default<% if (size == currentSize) { %> active <% } %>' id='btn-<%= size %>'><input type='radio' name='options'> <%= size %>x<%= size %></label> \
       <% }); \
     %> \
     </div> \
@@ -110,7 +110,7 @@ var BoardSizeView = Backbone.View.extend({
     </div>";
 
     var buttonsTemplate = _.template(buttonsTemplateStr);
-    this.$el.html(buttonsTemplate({possibleSizes: this.model.possibleSizes, animated: this.model.animated}));
+    this.$el.html(buttonsTemplate({currentSize: this.model.size, possibleSizes: this.model.possibleSizes, animated: this.model.animated}));
   }
 
 });
