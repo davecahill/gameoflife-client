@@ -23,6 +23,10 @@ var ServerModel = Backbone.Model.extend({
     },
     urlRoot: function(){ return 'http://localhost:8080/info/'},
     success: function(model, response) {
+      serverModel.ServerName = response.ServerName;
+      serverModel.LiveColor = response.LiveColor;
+      serverModel.DeadColor = response.DeadColor;
+
       logView.logMessage("Getting Game of Life server info succeeded, URL: <i>" + serverModel.urlRoot() + "</i>");
       logView.logMessage("Server name: <i>" + response.ServerName + "</i>");
       logView.logMessage("Server live color: <i>" + response.LiveColor + "</i>");
@@ -164,24 +168,24 @@ var BoardView = Backbone.View.extend({
   },
 
   render: function(){
-    var states = this.model.attributes.States;
-    var html = "";
-    if (states) {
-      for (var row = 0; row < states.length; row++) {
-        html += "<tr>";
-        for (var cell = 0; cell < states[row].length; cell++) {
-          html += "<td class='";
-          if (states[row][cell]) {
-            html += "alive";
-          } else {
-            html += "dead";
-          }
-          html += "''></td>";
-        }
-        html += "</tr>";
+    var bgColor = function(cellState) {
+      if (cellState) {
+        return serverModel.LiveColor;
+      } else {
+        return serverModel.DeadColor;
       }
-    }
-    this.$el.html(html);
+    };
+    var boardTemplate = _.template("\
+      <table> \
+      <% _.each(states, function(row) { %> \
+        <tr> \
+        <% row.forEach( function(cell) { %> \
+          <td style='background-color:<%= bgColor(cell) %>'></td> \
+        <% }); %> \
+        </tr> \
+      <% }); %> \
+      </table>");
+    this.$el.html(boardTemplate({states: this.model.attributes.States, bgColor: bgColor}));
   }
 });
 

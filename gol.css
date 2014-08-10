@@ -1,9 +1,6 @@
 
 /*  GAME OF LIFE BOOTSTRAP CSS  */
 
-.alive {background-color:black;}
-.dead {background-color:yellow;}
-
 #gameoflife {
   /* Move game of life board down to make space for board size chooser */
   margin-top: 50px;
