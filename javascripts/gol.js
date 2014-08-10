@@ -66,15 +66,8 @@ var LogView = Backbone.View.extend({
 var BoardSizeView = Backbone.View.extend({
   el: '#boardbuttons',
 
-  initialize: function(){
-    this.listenTo(this.model, 'change', this.modelChanged);
+  initialize: function() {
     this.render();
-  },
-
-  modelChanged: function() {
-    if (this.model.changed.animated != undefined) {
-      this.render();
-    }
   },
 
   events : function () {
@@ -98,7 +91,6 @@ var BoardSizeView = Backbone.View.extend({
   },
 
   render: function() {
-
     var buttonsTemplateStr = "<b>Board size:</b> \
     <div class='btn-group' data-toggle='buttons'> \
     <% _.each(possibleSizes, function(size) { %> \
@@ -118,7 +110,6 @@ var BoardSizeView = Backbone.View.extend({
     </div>";
 
     var buttonsTemplate = _.template(buttonsTemplateStr);
-
     this.$el.html(buttonsTemplate({possibleSizes: this.model.possibleSizes, animated: this.model.animated}));
   }
 
@@ -151,8 +142,10 @@ var BoardView = Backbone.View.extend({
   modelChanged: function() {
     if (this.model.changed.size != undefined) {
       this.model.size = this.model.changed.size;
+      boardSizeView.render();
     } else if (this.model.changed.animated != undefined) {
       this.model.animated = this.model.changed.animated;
+      boardSizeView.render();
     } else if (this.model.changed.States != undefined) {
       if (this.model.changed.States.length != this.model.size) {
         console.log("size wrong, this is an old update - discard.");
