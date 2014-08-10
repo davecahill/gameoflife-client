@@ -102,9 +102,9 @@ var BoardSizeView = Backbone.View.extend({
     <b>Animation actions:</b> \
     <div class='btn-group' id='animationbuttons'> \
     <% if (animated) { %> \
-      <button type='button' class='btn btn-danger' id='btn-stop'>Stop animation</button> \
+      <button type='button' class='btn btn-danger' id='btn-stop'><span class='glyphicon glyphicon-stop'></span> Stop animation</button> \
     <% } else { %> \
-      <button type='button' class='btn btn-success' id='btn-start'>Start animation</button> \
+      <button type='button' class='btn btn-success' id='btn-start'><span class='glyphicon glyphicon-play'></span> Start animation</button> \
     <% } %> \
     </div> \
     </div>";
