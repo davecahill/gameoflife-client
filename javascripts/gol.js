@@ -104,20 +104,28 @@ var BoardSizeView = Backbone.View.extend({
   },
 
   render: function() {
-    html = "<b>Board size:</b><div class='btn-group' data-toggle='buttons'>"
-    this.model.possibleSizes.forEach( function(size) {
-      html += "<label class='btn btn-default' id='btn-" + size + "'><input type='radio' name='options'> " + size + "x" + size + "</label>";
-    });
 
-    stopHidden = "";
-    startHidden = "";
-    if (this.model.animated) {
-      startHidden = "hidden";
-    } else {
-      stopHidden = "hidden";
-    }
-    html +="</div><div><b>Animation actions:</b><div class='btn-group' id='animationbuttons'><button type='button' class='btn btn-danger " + stopHidden + "' id='btn-stop'>Stop animation</button><button type='button' class='btn btn-success " + startHidden + "' id='btn-start'>Start animation</button></div></div>";
-    this.$el.html(html);
+    var buttonsTemplateStr = "<b>Board size:</b> \
+    <div class='btn-group' data-toggle='buttons'> \
+    <% _.each(possibleSizes, function(size) { %> \
+      <label class='btn btn-default' id='btn-<%= size %>'><input type='radio' name='options'> <%= size %>x<%= size %></label> \
+      <% }); \
+    %> \
+    </div> \
+    <div> \
+    <b>Animation actions:</b> \
+    <div class='btn-group' id='animationbuttons'> \
+    <% if (animated) { %> \
+      <button type='button' class='btn btn-danger' id='btn-stop'>Stop animation</button> \
+    <% } else { %> \
+      <button type='button' class='btn btn-success' id='btn-start'>Start animation</button> \
+    <% } %> \
+    </div> \
+    </div>";
+
+    var buttonsTemplate = _.template(buttonsTemplateStr);
+
+    this.$el.html(buttonsTemplate({possibleSizes: this.model.possibleSizes, animated: this.model.animated}));
   }
 
 });
