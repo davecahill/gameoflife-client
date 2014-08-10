@@ -18,9 +18,6 @@ var ServerModel = Backbone.Model.extend({
       serverModel.DeadColor = response.DeadColor;
 
       logView.logMessage("Getting Game of Life server info succeeded, URL: <i>" + serverModel.urlRoot() + "</i>");
-      logView.logMessage("Server name: <i>" + response.ServerName + "</i>");
-      logView.logMessage("Server live color: <i>" + response.LiveColor + "</i>");
-      logView.logMessage("Server dead color: <i>" + response.DeadColor + "</i>");
     },
     error: function(model, response) {
       logView.logMessage("Getting Game of Life server info failed (" + response.statusText + "), URL: <i>" + serverModel.urlRoot() + "</i>");
@@ -32,13 +29,28 @@ var BoardModel = Backbone.Model.extend({
     size: 10,
     possibleSizes: [4, 10, 20],
     animated: true,
-    urlRoot: function(){ return 'http://localhost:8080/new/' + this.size},
-    success: function(model, response) {
-      logView.logMessage("Contacting Game of Life API server succeeded, URL: <i>" + this.urlRoot + "</i>");
-    },
-    error: function(model, response) {
-      logView.logMessage("Contacting Game of Life API server failed (" + response.statusText + "), URL: <i>" + this.urlRoot + "</i>");
-    }
+    urlRoot: function(){ return 'http://localhost:8080/new/' + this.size}
+});
+
+// Set up server info view
+var ServerView = Backbone.View.extend({
+  el: '#server-info',
+
+  initialize: function(){
+    this.listenTo(this.model, 'change', this.render);
+  },
+
+  render: function(){
+    var serverInfoTemplate = _.template("\
+    The Game of Life API server can reply with its own name, and set the colors for live and dead cells.<br/> \
+    <table class='table'> \
+      <tr><td><b>Server Name:</b></td><td><%= name %></td></tr> \
+      <tr><td><b>Live cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr> \
+      <tr><td><b>Dead cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr> \
+    </table>");
+
+    this.$el.html(serverInfoTemplate({name: this.model.attributes.ServerName, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
+  }
 });
 
 // Set up log messages view
@@ -183,6 +195,7 @@ var BoardView = Backbone.View.extend({
 // Start
 var boardModel = new BoardModel();
 var serverModel = new ServerModel();
+var serverView = new ServerView({model: serverModel});
 var boardView = new BoardView({model: boardModel});
 var logView = new LogView();
 var boardSizeView = new BoardSizeView({model: boardModel});
