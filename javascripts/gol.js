@@ -1,13 +1,3 @@
-// Simple sleep function for animation
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
 // Set up log messages model
 var LogMessage = Backbone.Model.extend({
     messageText: ""
@@ -139,32 +129,40 @@ var BoardView = Backbone.View.extend({
   el: '#gameoflife',
 
   initialize: function(){
+    _.bindAll(this);
     this.listenTo(this.model, 'change', this.modelChanged);
-    // Kick off the initial request to get the "seed"
-    this.model.fetch();
+    setInterval(this.refresh, 80);
+  },
+
+  refresh: function(){
+    var snapshotModel = this.model;
+    if (snapshotModel.animated) {
+      if (snapshotModel.States == undefined || snapshotModel.States.length != snapshotModel.size) {
+        // Size has changed, get a new seed
+        this.model.fetch();
+      } else {
+        if (snapshotModel.hasChanged()) {
+          this.model.save();
+        }
+      }
+    }
   },
 
   modelChanged: function() {
     if (this.model.changed.size != undefined) {
-      // size changed - reflect that and fetch a new "seed"
       this.model.size = this.model.changed.size;
-      this.model.fetch();
     } else if (this.model.changed.animated != undefined) {
-        this.model.animated = this.model.changed.animated;
-        if (this.model.animated) {
-          this.model.save();
-        }
+      this.model.animated = this.model.changed.animated;
     } else if (this.model.changed.States != undefined) {
       if (this.model.changed.States.length != this.model.size) {
         console.log("size wrong, this is an old update - discard.");
       } else if (this.model.animated == false) {
         console.log("received an update but animation is stopped - discard.");
       } else {
-        this.render();
-        sleep(100);
-        this.model.save();  
+        this.model.States = this.model.changed.States;
       }
     }
+    this.render();
   },
 
   render: function(){
@@ -185,7 +183,7 @@ var BoardView = Backbone.View.extend({
         </tr> \
       <% }); %> \
       </table>");
-    this.$el.html(boardTemplate({states: this.model.attributes.States, bgColor: bgColor}));
+    this.$el.html(boardTemplate({states: this.model.States, bgColor: bgColor}));
   }
 });
 
