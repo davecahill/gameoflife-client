@@ -9,18 +9,24 @@ var LogMessages = Backbone.Collection.extend({
 // Set up server info model
 var ServerModel = Backbone.Model.extend({
     initialize: function(){
+      this.baseUrl = "http://localhost:8080";
+      this.getInfo();
+    },
+    getInfo: function() {
       this.fetch({success: this.success, error: this.error});
     },
-    urlRoot: function(){ return 'http://localhost:8080/info/'},
+    urlRoot: function(){ return this.baseUrl + '/info/'},
     success: function(model, response) {
       serverModel.ServerName = response.ServerName;
       serverModel.LiveColor = response.LiveColor;
       serverModel.DeadColor = response.DeadColor;
 
-      logView.logMessage("Getting Game of Life server info succeeded, URL: <i>" + serverModel.urlRoot() + "</i>");
+      logView.logMessage("Getting server info succeeded at " + serverModel.urlRoot());
+      logView.logMessage("Starting animation.");
+      boardModel.set({"animated":true});
     },
     error: function(model, response) {
-      logView.logMessage("Getting Game of Life server info failed (" + response.statusText + "), URL: <i>" + serverModel.urlRoot() + "</i>");
+      logView.logMessage("Getting Game of Life server info failed at " + serverModel.urlRoot(), "warn");
     }
 });
 
@@ -28,8 +34,8 @@ var ServerModel = Backbone.Model.extend({
 var BoardModel = Backbone.Model.extend({
     size: 10,
     possibleSizes: [4, 10, 20],
-    animated: true,
-    urlRoot: function(){ return 'http://localhost:8080/new/' + this.size}
+    animated: false,
+    urlRoot: function(){ return serverModel.baseUrl + '/new/' + this.size}
 });
 
 // Set up server info view
@@ -37,19 +43,43 @@ var ServerView = Backbone.View.extend({
   el: '#server-info',
 
   initialize: function(){
+    this.render();
     this.listenTo(this.model, 'change', this.render);
+  },
+
+  events : function () {
+    var evts = {};
+    var view = this;
+    var model = view.model;
+
+    evts["click #btn-connect"] = function() {
+      boardModel.set({"animated":false});
+      model.baseUrl = $("#serveraddr").val();
+      model.getInfo();
+    };
+
+
+    return evts;
   },
 
   render: function(){
     var serverInfoTemplate = _.template("\
-    The Game of Life API server can reply with its own name, and set the colors for live and dead cells.<br/> \
+    &nbsp;<br/> \
+    <div class='input-group'> \
+      <input type='text' class='form-control' id='serveraddr' value='<%= address %>'> \
+      <span class='input-group-btn'> \
+        <button class='btn btn-default' id='btn-connect' type='button'>Change</button> \
+      </span> \
+    </div> \
+    <% if (name && live && dead) { %> \
     <table class='table'> \
       <tr><td><b>Server Name:</b></td><td><%= name %></td></tr> \
       <tr><td><b>Live cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr> \
       <tr><td><b>Dead cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr> \
-    </table>");
+    </table> \
+    <% } %>");
 
-    this.$el.html(serverInfoTemplate({name: this.model.attributes.ServerName, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
+    this.$el.html(serverInfoTemplate({address: this.model.baseUrl, name: this.model.attributes.ServerName, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
   }
 });
 
@@ -61,15 +91,25 @@ var LogView = Backbone.View.extend({
     this.infoMessages = new LogMessages();
   },
 
-  logMessage: function(msg) {
-    this.infoMessages.add(new LogMessage({messageText: msg}));
+  logMessage: function(msg, severity) {
+    var dt = new Date();
+    var time = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds() + "\t";
+
+    var severityText = ""
+    if (severity == "warn") {
+      severityText = "<span class='label label-danger'>ERROR</span> "
+    } else {
+      severityText = "<span class='label label-success'>INFO</span> "
+    }
+
+    this.infoMessages.add(new LogMessage({messageText: time + severityText + msg}));
     this.render();
   },
 
   render: function(){
     var html = "";
     for (var i = this.infoMessages.models.length - 1; i >= 0; i--) {
-      html += "<tr><td>[" + (i + 1) + "] " + this.infoMessages.models[i].attributes.messageText  + "</td></tr>";
+      html += "<tr><td>" + this.infoMessages.models[i].attributes.messageText  + "</td></tr>";
     }
     this.$el.html(html);
   }
