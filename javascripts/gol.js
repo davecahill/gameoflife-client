@@ -1,10 +1,4 @@
-// Set up log messages model
-var LogMessage = Backbone.Model.extend({
-    messageText: ""
-});
-var LogMessages = Backbone.Collection.extend({
-  model: LogMessage
-});
+/******************** MODELS ********************/
 
 // Set up server info model
 var ServerModel = Backbone.Model.extend({
@@ -12,10 +6,21 @@ var ServerModel = Backbone.Model.extend({
       this.baseUrl = "http://localhost:8080";
       this.getInfo();
     },
+
     getInfo: function() {
       this.fetch({success: this.success, error: this.error});
     },
+
+    resetTo: function(newBaseUrl) {
+      this.clear();
+      boardModel.reset();
+      this.baseUrl = newBaseUrl;
+      this.set({baseUrl: newBaseUrl});
+      this.getInfo();
+    },
+
     urlRoot: function(){ return this.baseUrl + '/info/'},
+
     success: function(model, response) {
       serverModel.ServerName = response.ServerName;
       serverModel.LiveColor = response.LiveColor;
@@ -25,18 +30,36 @@ var ServerModel = Backbone.Model.extend({
       logView.logMessage("Starting animation.");
       boardModel.set({"animated":true});
     },
+
     error: function(model, response) {
-      logView.logMessage("Getting Game of Life server info failed at " + serverModel.urlRoot(), "warn");
+      logView.logMessage("Getting server info failed at " + serverModel.urlRoot(), "warn");
     }
 });
 
 // Set up board model
 var BoardModel = Backbone.Model.extend({
+    defaults: {
+      States: [],
+    },
+    animated: false,
     size: 10,
     possibleSizes: [4, 10, 20],
-    animated: false,
-    urlRoot: function(){ return serverModel.baseUrl + '/new/' + this.size}
+    urlRoot: function(){ return serverModel.baseUrl + '/new/' + this.size},
+    reset: function() {
+      this.set({animated: false});
+      this.set(this.defaults);
+    }
 });
+
+// Set up log messages model
+var LogMessage = Backbone.Model.extend({
+    messageText: ""
+});
+var LogMessages = Backbone.Collection.extend({
+  model: LogMessage
+});
+
+/******************** VIEWS ********************/
 
 // Set up server info view
 var ServerView = Backbone.View.extend({
@@ -53,11 +76,8 @@ var ServerView = Backbone.View.extend({
     var model = view.model;
 
     evts["click #btn-connect"] = function() {
-      boardModel.set({"animated":false});
-      model.baseUrl = $("#serveraddr").val();
-      model.getInfo();
+      model.resetTo($("#serveraddr").val());
     };
-
 
     return evts;
   },
@@ -68,7 +88,7 @@ var ServerView = Backbone.View.extend({
     <div class='input-group'> \
       <input type='text' class='form-control' id='serveraddr' value='<%= address %>'> \
       <span class='input-group-btn'> \
-        <button class='btn btn-default' id='btn-connect' type='button'>Change</button> \
+        <button class='btn btn-default' id='btn-connect' type='button'>Connect</button> \
       </span> \
     </div> \
     <% if (name && live && dead) { %> \
@@ -199,12 +219,17 @@ var BoardView = Backbone.View.extend({
       this.model.animated = this.model.changed.animated;
       boardSizeView.render();
     } else if (this.model.changed.States != undefined) {
-      if (this.model.changed.States.length != this.model.size) {
-        console.log("size wrong, this is an old update - discard.");
-      } else if (this.model.animated == false) {
-        console.log("received an update but animation is stopped - discard.");
-      } else {
+      if (this.model.changed.States.length == 0) {
+        // Reset
         this.model.States = this.model.changed.States;
+      } else {
+        if (this.model.changed.States.length != this.model.size) {
+          console.log("size wrong, this is an old update - discard.");
+        } else if (this.model.animated == false) {
+          console.log("received an update but animation is stopped - discard.");
+        } else {
+          this.model.States = this.model.changed.States;
+        }
       }
     }
     this.render();
