@@ -33,6 +33,7 @@ var ServerModel = Backbone.Model.extend({
 
     error: function(model, response) {
       logView.logMessage("Getting server info failed at " + serverModel.urlRoot(), "warn");
+      boardModel.set({"animated":false});
     }
 });
 
@@ -48,6 +49,10 @@ var BoardModel = Backbone.Model.extend({
     reset: function() {
       this.set({animated: false});
       this.set(this.defaults);
+    },
+    error: function(model, response, options) {
+      logView.logMessage("Getting next step failed at " + boardModel.urlRoot() + ", stopping animation", "warn");
+      boardModel.set({"animated":false});
     }
 });
 
@@ -202,10 +207,10 @@ var BoardView = Backbone.View.extend({
     if (snapshotModel.animated) {
       if (snapshotModel.States == undefined || snapshotModel.States.length != snapshotModel.size) {
         // Size has changed, get a new seed
-        this.model.fetch();
+        this.model.fetch({error: this.model.error});
       } else {
         if (snapshotModel.hasChanged()) {
-          this.model.save();
+          this.model.save(null, {error: this.model.error});
         }
       }
     }
