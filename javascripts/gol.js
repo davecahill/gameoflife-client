@@ -41,7 +41,18 @@ var BoardModel = Backbone.Model.extend({
     animated: false,
     size: 10,
     possibleSizes: [4, 10, 20],
-    urlRoot: function(){ return serverModel.baseUrl + '/new/' + this.size},
+    urlRoot: function(){ return serverModel.baseUrl + '/step/'},
+    seedStates: function() {
+      newStates = [];
+      for (var row = 0; row < this.size; row++) {
+        newStates[row] = [];
+        for (var col = 0; col < this.size; col++) {
+          var x = Math.floor((Math.random() * 2) + 1);
+          newStates[row][col] = x == 1;
+        }
+      }
+      this.set({States: newStates});
+    },
     reset: function() {
       this.set({animated: false});
       this.set(this.defaults);
@@ -205,7 +216,7 @@ var BoardView = Backbone.View.extend({
     if (snapshotModel.animated) {
       if (snapshotModel.States == undefined || snapshotModel.States.length != snapshotModel.size) {
         // Size has changed, get a new seed
-        this.model.fetch({error: this.model.error});
+        this.model.seedStates();
       } else {
         if (snapshotModel.hasChanged()) {
           this.model.save(null, {error: this.model.error});
