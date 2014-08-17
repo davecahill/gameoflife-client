@@ -95,24 +95,7 @@ var ServerView = Backbone.View.extend({
   },
 
   render: function(){
-    var serverInfoTemplate = _.template("\
-    &nbsp;<br/> \
-    <div class='input-group'> \
-      <input type='text' class='form-control' id='serveraddr' value='<%= address %>'> \
-      <span class='input-group-btn'> \
-        <button class='btn btn-default' id='btn-connect' type='button'>Connect</button> \
-      </span> \
-    </div> \
-    <% if (live && dead) { %> \
-    <table class='table'> \
-      <tr><td><b>Author:</b></td><td><%= author %></td></tr> \
-      <tr><td><b>Language:</b></td><td><%= language %></td></tr> \
-      <tr><td><b>Source code:</b></td><td><a href='<%= sourceCodeUrl %>'><%= sourceCodeUrl %></a></td></tr> \
-      <tr><td><b>Live cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr> \
-      <tr><td><b>Dead cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr> \
-    </table> \
-    <% } %>");
-
+    var serverInfoTemplate = _.template($("#template-server-info").html());
     this.$el.html(serverInfoTemplate({address: this.model.baseUrl, author: this.model.attributes.Author, language: this.model.attributes.Language, sourceCodeUrl: this.model.attributes.SourceCodeURL, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
   }
 });
@@ -177,25 +160,7 @@ var BoardSizeView = Backbone.View.extend({
   },
 
   render: function() {
-    var buttonsTemplateStr = "<b>Board size:</b> \
-    <div class='btn-group' data-toggle='buttons'> \
-    <% _.each(possibleSizes, function(size) { %> \
-      <label class='btn btn-default<% if (size == currentSize) { %> active <% } %>' id='btn-<%= size %>'><input type='radio' name='options'> <%= size %>x<%= size %></label> \
-      <% }); \
-    %> \
-    </div> \
-    <div> \
-    <b>Animation actions:</b> \
-    <div class='btn-group' id='animationbuttons'> \
-    <% if (animated) { %> \
-      <button type='button' class='btn btn-danger' id='btn-stop'><span class='glyphicon glyphicon-stop'></span> Stop animation</button> \
-    <% } else { %> \
-      <button type='button' class='btn btn-success' id='btn-start'><span class='glyphicon glyphicon-play'></span> Start animation</button> \
-    <% } %> \
-    </div> \
-    </div>";
-
-    var buttonsTemplate = _.template(buttonsTemplateStr);
+    var buttonsTemplate = _.template($("#template-buttons").html());
     this.$el.html(buttonsTemplate({currentSize: this.model.size, possibleSizes: this.model.possibleSizes, animated: this.model.animated}));
   }
 
@@ -257,16 +222,7 @@ var BoardView = Backbone.View.extend({
         return serverModel.attributes.DeadColor;
       }
     };
-    var boardTemplate = _.template("\
-      <table class='gameboard'> \
-      <% _.each(states, function(row) { %> \
-        <tr> \
-        <% row.forEach( function(cell) { %> \
-          <td style='background-color:<%= bgColor(cell) %>'></td> \
-        <% }); %> \
-        </tr> \
-      <% }); %> \
-      </table>");
+    var boardTemplate = _.template($("#template-board").html());
     this.$el.html(boardTemplate({states: this.model.States, bgColor: bgColor}));
   }
 });

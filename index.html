@@ -6,7 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+    <link href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAJsSAACbEgAAAAAA
+                AAAAAADk5OT/zs7O/4yMjP+lpaX/4eHh/9fX1//c3Nz/lpaW/5aWlv/b29v/19fX/+Li4v+lpaX/
+                jIyM/83Nzf/j4+P/zc3N/0NDQ/8EBAT/ERER/42Njf/X19f/ZmZm/wgICP8ICAj/ZmZm/9fX1/+N
+                jY3/EBAQ/wQEBP9ERET/zc3N/42Njf8HBwf/AAAA/wAAAP84ODj/qamp/xgYGP8AAAD/AAAA/xgY
+                GP+pqan/ODg4/wAAAP8AAAD/BwcH/42Njf+lpaX/EhIS/wAAAP8AAAD/UVFR/729vf8rKyv/AAAA
+                /wAAAP8rKyv/vb29/1BQUP8AAAD/AAAA/xISEv+mpqb/4uLi/42Njf80NDT/Tk5O/8XFxf/e3t7/
+                q6ur/z09Pf8+Pj7/q6ur/93d3f/ExMT/UFBQ/zY2Nv+NjY3/4uLi/9XV1f/h4eH/0tLS/9nZ2f/e
+                3t7/xsbG/+Hh4f/V1dX/1tbW/+Hh4f/Hx8f/3t7e/729vf+oqKj/2NjY/9bW1v/u7u7//v7+//7+
+                /v/+/v7/+Pj4/+Dg4P/9/f3//v7+//7+/v/9/f3/4eHh/6qqqv8qKir/FhYW/2dnZ//b29v/7u7u
+                ///////+/v7//v7+//n5+f/h4eH//f39//7+/v/+/v7//v7+/9bW1v8/Pz//AAAA/wAAAP8KCgr/
+                l5eX/+7u7v///////v7+//7+/v/5+fn/4ODg//39/f/+/v7//v7+//7+/v/V1dX/Pz8//wAAAP8A
+                AAD/CgoK/5eXl//t7e3//v7+//39/f/+/v7/+Pj4/+Dg4P/9/f3//v7+//7+/v/9/f3/4eHh/6ur
+                q/8qKir/FRUV/2ZmZv/b29v/1dXV/+Hh4f/g4OD/4eHh/9zc3P/Hx8f/4uLi/9XV1f/W1tb/4eHh
+                /8fHx//c3Nz/xMTE/7a2tv/Y2Nj/1tbW/+rq6v/5+fn/+fn5//n5+f/09PT/3Nzc/6urq/89PT3/
+                Pj4+/6urq//c3Nz/9PT0//v7+//8/Pz/+vr6/+rq6v/u7u7///////7+/v/+/v7/+/v7/8TExP8r
+                Kyv/AAAA/wAAAP8rKyv/xMTE//v7+//+/v7//v7+///////v7+//7u7u///////+/v7//v7+//z8
+                /P+2trb/FxcX/wAAAP8AAAD/GBgY/7a2tv/8/Pz//v7+//7+/v//////7u7u/+7u7v//////////
+                ///////6+vr/19fX/2ZmZv8ICAj/CAgI/2ZmZv/X19f/+vr6/////////////////+/v7//i4uL/
+                7+/v/+7u7v/u7u7/6urq/9bW1v/b29v/l5eX/5aWlv/c3Nz/1tbW/+rq6v/v7+//7u7u/+/v7//i
+                4uL/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                AAAAAAAAAAAAAA==" rel="icon" type="image/x-icon" />
 
     <title>Conway's Game of Life</title>
 
@@ -51,11 +71,41 @@
         <div class="col-sm-2 col-md-2 sidebar">
           <ul class="nav nav-sidebar" id="boardbuttons">
           </ul>
+          <script type="text/html" id="template-buttons">
+            <b>Board size:</b>
+            <div class='btn-group' data-toggle='buttons'>
+            <% _.each(possibleSizes, function(size) { %>
+              <label class='btn btn-default<% if (size == currentSize) { %> active <% } %>' id='btn-<%= size %>'><input type='radio' name='options'> <%= size %>x<%= size %></label>
+              <% });
+            %>
+            </div>
+            <div>
+            <b>Animation actions:</b>
+            <div class='btn-group' id='animationbuttons'>
+            <% if (animated) { %>
+              <button type='button' class='btn btn-danger' id='btn-stop'><span class='glyphicon glyphicon-stop'></span> Stop animation</button>
+            <% } else { %>
+              <button type='button' class='btn btn-success' id='btn-start'><span class='glyphicon glyphicon-play'></span> Start animation</button>
+            <% } %>
+            </div>
+            </div>
+          </script>
         </div>
         <div class="col-sm-5 col-sm-offset-2 col-md-5 col-md-offset-2">
           <div class="row placeholders">
             <div class="col-sm-5 col-md-5 placeholder" id="gameoflife">
             </div>
+            <script type="text/html" id="template-board">
+              <table class='gameboard'>
+              <% _.each(states, function(row) { %>
+                <tr>
+                <% row.forEach( function(cell) { %>
+                  <td style='background-color:<%= bgColor(cell) %>'></td>
+                <% }); %>
+                </tr>
+              <% }); %>
+              </table>
+            </script>
           </div>
         </div>
         <div class="col-sm-5 col-md-5">
@@ -66,6 +116,24 @@
             <div class="panel-body" id="server-info">
               Server info not yet available.
             </div>
+            <script type="text/html" id="template-server-info">
+              &nbsp;<br/>
+              <div class='input-group'>
+                <input type='text' class='form-control' id='serveraddr' value='<%= address %>'>
+                <span class='input-group-btn'>
+                  <button class='btn btn-default' id='btn-connect' type='button'>Connect</button>
+                </span>
+              </div>
+              <% if (live && dead) { %>
+              <table class='table'>
+                <tr><td><b>Author:</b></td><td><%= author %></td></tr>
+                <tr><td><b>Language:</b></td><td><%= language %></td></tr>
+                <tr><td><b>Source code:</b></td><td><a href='<%= sourceCodeUrl %>'><%= sourceCodeUrl %></a></td></tr>
+                <tr><td><b>Live cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr>
+                <tr><td><b>Dead cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr>
+              </table>
+              <% } %>
+            </script>
           </div>
           <div class="table-responsive">
             <table class="table" id="logmessages">
