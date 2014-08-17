@@ -6,7 +6,7 @@
   margin-top: 50px;
 }
 
-td,th {
+.gameboard td,th {
   min-width: 1em; /* the normal 'fixed' width */
   width: 1em; /* the normal 'fixed' width */
   max-width: 1em; /* the normal 'fixed' width, to stop the cells expanding */
@@ -14,6 +14,11 @@ td,th {
   min-height: 1em; /* the normal 'fixed' width */
   height: 1em; /* the normal 'fixed' width */
   max-height: 1em; /* the normal 'fixed' width, to stop the cells expanding */
+}
+
+.onecell {
+  border: 1px solid black;
+  display: inline-table;
 }
 
 /*  BELOW IS BOOTSTRAP CSS  */

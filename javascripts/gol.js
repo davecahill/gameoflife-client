@@ -22,10 +22,6 @@ var ServerModel = Backbone.Model.extend({
     urlRoot: function(){ return this.baseUrl + '/info/'},
 
     success: function(model, response) {
-      serverModel.ServerName = response.ServerName;
-      serverModel.LiveColor = response.LiveColor;
-      serverModel.DeadColor = response.DeadColor;
-
       logView.logMessage("Getting server info succeeded at " + serverModel.urlRoot());
       logView.logMessage("Starting animation.");
       boardModel.set({"animated":true});
@@ -96,15 +92,17 @@ var ServerView = Backbone.View.extend({
         <button class='btn btn-default' id='btn-connect' type='button'>Connect</button> \
       </span> \
     </div> \
-    <% if (name && live && dead) { %> \
+    <% if (live && dead) { %> \
     <table class='table'> \
-      <tr><td><b>Server Name:</b></td><td><%= name %></td></tr> \
-      <tr><td><b>Live cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr> \
-      <tr><td><b>Dead cells color:</b></td><td><table style='border: 1px solid black; display:inline-table'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr> \
+      <tr><td><b>Author:</b></td><td><%= author %></td></tr> \
+      <tr><td><b>Language:</b></td><td><%= language %></td></tr> \
+      <tr><td><b>Source code:</b></td><td><a href='<%= sourceCodeUrl %>'><%= sourceCodeUrl %></a></td></tr> \
+      <tr><td><b>Live cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= live %>'></td></tr></table> (<%= live %>)</td></tr> \
+      <tr><td><b>Dead cells color:</b></td><td><table class='gameboard onecell'><tr><td style='background-color:<%= dead %>'></td></tr></table> (<%= dead %>)</td></tr> \
     </table> \
     <% } %>");
 
-    this.$el.html(serverInfoTemplate({address: this.model.baseUrl, name: this.model.attributes.ServerName, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
+    this.$el.html(serverInfoTemplate({address: this.model.baseUrl, author: this.model.attributes.Author, language: this.model.attributes.Language, sourceCodeUrl: this.model.attributes.SourceCodeURL, live: this.model.attributes.LiveColor, dead: this.model.attributes.DeadColor}));
   }
 });
 
@@ -243,13 +241,13 @@ var BoardView = Backbone.View.extend({
   render: function(){
     var bgColor = function(cellState) {
       if (cellState) {
-        return serverModel.LiveColor;
+        return serverModel.attributes.LiveColor;
       } else {
-        return serverModel.DeadColor;
+        return serverModel.attributes.DeadColor;
       }
     };
     var boardTemplate = _.template("\
-      <table> \
+      <table class='gameboard'> \
       <% _.each(states, function(row) { %> \
         <tr> \
         <% row.forEach( function(cell) { %> \
@@ -265,6 +263,7 @@ var BoardView = Backbone.View.extend({
 // Start
 var boardModel = new BoardModel();
 var serverModel = new ServerModel();
+
 var serverView = new ServerView({model: serverModel});
 var boardView = new BoardView({model: boardModel});
 var logView = new LogView();
